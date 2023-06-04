@@ -62,7 +62,7 @@ class ChatDetailsScreen extends StatelessWidget {
                             var message =
                                 SocialCubit.get(context).messages[index];
 
-                            if (SocialCubit.get(context).userModel.uId ==
+                            if (SocialCubit.get(context).userModel?.uId ==
                                 message.senderId) {
                               return buildMyMessage(message);
                             }

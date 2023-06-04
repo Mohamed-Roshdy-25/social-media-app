@@ -1,9 +1,6 @@
 // ignore_for_file: constant_identifier_names, sized_box_for_whitespace
 
-import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_learn_app/shared/cubit/cubit.dart';
-import 'package:flutter_learn_app/shared/styles/colors.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -148,4 +145,36 @@ Color chooseToastColor(ToastStates state) {
   return color;
 }
 
-
+void showErrorDialog({required String error, required BuildContext context}) {
+  showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            children: const [
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text('Error occured'),
+              ),
+            ],
+          ),
+          content: Text(
+            error,
+            style: const TextStyle(
+                color: Colors.blue,
+                fontSize: 15,
+                fontStyle: FontStyle.italic),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.canPop(context) ? Navigator.pop(context) : null;
+                },
+                child: const Text(
+                  'OK',
+                  style: TextStyle(color: Colors.red),
+                ))
+          ],
+        );
+      });
+}

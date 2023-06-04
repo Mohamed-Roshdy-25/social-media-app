@@ -21,9 +21,9 @@ class EditProfileScreen extends StatelessWidget {
         var profileImage = SocialCubit.get(context).profileImage;
         var coverImage = SocialCubit.get(context).coverImage;
 
-        nameController.text = userModel.name as String;
-        phoneController.text = userModel.phone as String;
-        bioController.text = userModel.bio as String;
+        nameController.text = userModel?.name as String;
+        phoneController.text = userModel?.phone as String;
+        bioController.text = userModel?.bio as String;
 
         return Scaffold(
           appBar: defaultAppBar(
@@ -76,7 +76,7 @@ class EditProfileScreen extends StatelessWidget {
                                     image: DecorationImage(
                                       image: coverImage == null
                                           ? NetworkImage(
-                                              '${userModel.cover}',
+                                              '${userModel?.cover}',
                                             )
                                           : FileImage(coverImage)
                                               as ImageProvider,
@@ -108,7 +108,7 @@ class EditProfileScreen extends StatelessWidget {
                                   Theme.of(context).scaffoldBackgroundColor,
                               child: CircleAvatar(
                                 radius: 60.0,
-                                backgroundImage: profileImage == null ? NetworkImage('${userModel.image}',) : FileImage(profileImage) as ImageProvider,
+                                backgroundImage: profileImage == null ? NetworkImage('${userModel?.image}',) : FileImage(profileImage) as ImageProvider,
                               ),
                             ),
                             IconButton(

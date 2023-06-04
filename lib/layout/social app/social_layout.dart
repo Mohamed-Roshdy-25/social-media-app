@@ -4,12 +4,15 @@ import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/states.dart';
 import 'package:flutter_learn_app/modules/social_app/new_post/new_post_screen.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
+import 'package:flutter_learn_app/shared/components/constants.dart';
+import 'package:flutter_learn_app/shared/network/local/cache_helper.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
 
 // ignore: use_key_in_widget_constructors
 class SocialLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    uId = CacheHelper.getData(key: 'uId');
     return BlocConsumer<SocialCubit, SocialStates>(
       listener: (context, state) {
         if(state is SocialNewPostState)
@@ -27,10 +30,6 @@ class SocialLayout extends StatelessWidget {
               IconButton(
                 onPressed: () {},
                 icon: const Icon(IconBroken.Notification),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(IconBroken.Search),
               ),
             ],
           ),
@@ -67,9 +66,9 @@ class SocialLayout extends StatelessWidget {
               ),
               BottomNavigationBarItem(
                 icon: Icon(
-                  IconBroken.Setting,
+                  IconBroken.Profile,
                 ),
-                label: 'Settings',
+                label: 'Profile',
               ),
             ],
           ),

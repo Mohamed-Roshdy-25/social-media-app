@@ -53,14 +53,14 @@ class SocialLoginScreen extends StatelessWidget {
                         Text(
                           'LOGIN',
                           style:
-                          Theme.of(context).textTheme.headline4!.copyWith(
+                          Theme.of(context).textTheme.headlineMedium!.copyWith(
                             color: Colors.black,
                           ),
                         ),
                         Text(
                           'Login now to communicate with new friends',
                           style:
-                          Theme.of(context).textTheme.bodyText1!.copyWith(
+                          Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Colors.grey,
                           ),
                         ),

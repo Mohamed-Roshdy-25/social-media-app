@@ -98,11 +98,7 @@ class MyApp extends StatelessWidget {
       providers: [
 
         BlocProvider(
-          create: (context) => AppCubit()
-          //   ..changeAppMode(
-          //   fromShared: isDark,
-          // )
-          ,
+          create: (context) => AppCubit(),
         ),
         BlocProvider(
           create: (context) => SocialCubit()
@@ -114,7 +110,7 @@ class MyApp extends StatelessWidget {
         builder: (context, state) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            darkTheme: darkTheme,
+            darkTheme: lightTheme,
             theme: lightTheme,
             home: startWidget,
           );
