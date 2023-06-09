@@ -2,11 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_learn_app/firebase_notification_api.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/states.dart';
 import 'package:flutter_learn_app/modules/social_app/comments/comments_screen.dart';
 import 'package:flutter_learn_app/modules/social_app/settings/settings_screen.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
+import 'package:flutter_learn_app/shared/components/constants.dart';
 import 'package:flutter_learn_app/shared/network/local/cache_helper.dart';
 import 'package:flutter_learn_app/shared/styles/colors.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
@@ -123,16 +125,6 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
                                                 ),
                                       ),
                                     ],
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 15.0,
-                                ),
-                                IconButton(
-                                  onPressed: () {},
-                                  icon: const Icon(
-                                    Icons.more_horiz,
-                                    size: 16.0,
                                   ),
                                 ),
                               ],
@@ -457,19 +449,31 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
 
                           String uid = user!.uid;
 
-                          final DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+                          final DocumentSnapshot currentUserDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
                           FirebaseFirestore.instance.collection('posts').doc(model.id).update({'comments': FieldValue
                               .arrayUnion([
                             {
-                              'userId': userDoc.get('uId'),
+                              'userId': currentUserDoc.get('uId'),
                               'commentId': commentId,
-                              'name': userDoc.get('name'),
+                              'name': currentUserDoc.get('name'),
                               'commentBody': _commentController.text,
                               'time': Timestamp.now(),
-                              'userImageUrl': userDoc.get('image'),
+                              'userImageUrl': currentUserDoc.get('image'),
                             }
                           ])
+                          }).then((value) async {
+                            _commentController.clear();
+
+                            DocumentSnapshot<Map<String, dynamic>> postOwnerDocument = await FirebaseFirestore.instance.collection('users').doc(model['uId']).get();
+
+                            String commenterName = currentUserDoc.get('name');
+
+                            String token = postOwnerDocument.get('token');
+
+                            if(model['uId'] != uid) {
+                              fireApi.sendNotifyFromFirebase(title: '$commenterName add comment on your post', body: _commentController.text, sendNotifyTo: token, type: 'comment', postId: model.id,uploadedBy: model['uId']);
+                            }
                           });
 
                           // DocumentSnapshot<Map<String, dynamic>> userDocument = await FirebaseFirestore.instance.collection('users').doc(uploadedById).get();

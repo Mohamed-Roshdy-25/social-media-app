@@ -1,27 +1,58 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_learn_app/global_method.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/states.dart';
 import 'package:flutter_learn_app/modules/social_app/new_post/new_post_screen.dart';
+import 'package:flutter_learn_app/modules/social_app/post_details/post_details_screen.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
 import 'package:flutter_learn_app/shared/components/constants.dart';
 import 'package:flutter_learn_app/shared/network/local/cache_helper.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
 
-// ignore: use_key_in_widget_constructors
 class SocialLayout extends StatefulWidget {
+  const SocialLayout({Key? key}) : super(key: key);
+
   @override
   State<SocialLayout> createState() => _SocialLayoutState();
 }
 
 class _SocialLayoutState extends State<SocialLayout> {
 
+  Future<void> setupInteractedMessage() async {
+    await FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) {
+        _handleMessage(message);
+      }
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  }
+
+  void _handleMessage(RemoteMessage message) async {
+    if (message.data['type'] == 'post') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PostDetailsScreen(postId: message.data['postId']),
+          ));
+    }
+    if (message.data['type'] == 'comment') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PostDetailsScreen(postId: message.data['postId']),
+          ));
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     uId = CacheHelper.getData(key: 'uId');
     globalMethods.registerNotification(context);
+    setupInteractedMessage();
   }
 
   @override

@@ -385,13 +385,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(
                   width: 15.0,
                 ),
-                IconButton(
-                  onPressed: () {
-
-                  },
-                  icon: const Icon(
-                    Icons.more_horiz,
-                    size: 16.0,
+                Padding(
+                  padding: const EdgeInsets.only(right: 5.0),
+                  child: PopupMenuButton<String>(
+                    onSelected: (String value) async {
+                      switch (value) {
+                        case 'option1':
+                          if(model['uId'] == uId) {
+                            await FirebaseFirestore.instance.collection('posts').doc(model.id).delete();
+                          } else {
+                            showErrorDialog(error: 'You don\'t have access to delete this post', context: context);
+                          }
+                          break;
+                      }
+                    },
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      PopupMenuItem<String>(
+                        value: 'option2',
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5.0),
+                            child: Text(
+                              'Edit',
+                              style: Theme.of(context).textTheme.labelMedium?.copyWith(color: defaultColor),
+                            ),
+                          ),),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'option1',
+                        child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5.0),
+                              child: Text(
+                                'Delete',
+                                style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.red),
+                              ),
+                            ),),
+                      ),
+                    ],
+                    child: const Icon(
+                      Icons.more_horiz,
+                    ),
                   ),
                 ),
               ],

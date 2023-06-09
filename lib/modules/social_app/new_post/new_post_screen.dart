@@ -78,20 +78,19 @@ class _NewPostScreenState extends State<NewPostScreen> {
                   height: 10.0,
                 ),
                 Row(
-                  children: const [
+                  children: [
                     CircleAvatar(
                       radius: 25.0,
-                      backgroundImage: NetworkImage(
-                        'https://img.freepik.com/free-photo/positive-man-panama-hat-touching-his-head-thinks-about-vacation-doubts-makes-decision-isolated-yellow-studio-background_154092-14759.jpg?w=740',
-                      ),
+                      backgroundColor: Colors.grey,
+                      backgroundImage: SocialCubit.get(context).userModel?.image != null? NetworkImage('${SocialCubit.get(context).userModel!.image}') : null,
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 15.0,
                     ),
                     Expanded(
                       child: Text(
-                        'Mohamed Roshdy',
-                        style: TextStyle(
+                        SocialCubit.get(context).userModel?.name??'',
+                        style: const TextStyle(
                           height: 1.4,
                         ),
                       ),

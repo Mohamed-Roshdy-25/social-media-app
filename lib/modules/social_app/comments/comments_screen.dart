@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_learn_app/firebase_notification_api.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:uuid/uuid.dart';
@@ -113,38 +114,32 @@ class CommentsScreen extends StatelessWidget {
 
                           String uid = user!.uid;
 
-                          final DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+                          final DocumentSnapshot currentUserDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
-                          FirebaseFirestore.instance.collection('posts').doc(postId).update({'comments': FieldValue
+                         await FirebaseFirestore.instance.collection('posts').doc(postId).update({'comments': FieldValue
                               .arrayUnion([
                             {
-                              'userId': userDoc.get('uId'),
+                              'userId': currentUserDoc.get('uId'),
                               'commentId': commentId,
-                              'name': userDoc.get('name'),
+                              'name': currentUserDoc.get('name'),
                               'commentBody': _commentController.text,
                               'time': Timestamp.now(),
-                              'userImageUrl': userDoc.get('image'),
+                              'userImageUrl': currentUserDoc.get('image'),
                             }
                           ])
+                          }).then((value) async {
+                           _commentController.clear();
+
+                            DocumentSnapshot<Map<String, dynamic>> postOwnerDocument = await FirebaseFirestore.instance.collection('users').doc(uploadedById).get();
+
+                            String commenterName = currentUserDoc.get('name');
+
+                            String token = postOwnerDocument.get('token');
+
+                            if(uploadedById != uid) {
+                              fireApi.sendNotifyFromFirebase(title: '$commenterName add comment on your post', body: _commentController.text, sendNotifyTo: token, type: 'comment', postId: postId,uploadedBy: uploadedById);
+                            }
                           });
-
-                          await Fluttertoast.showToast(
-                            msg: "comment has been uploaded successfully",
-                            toastLength: Toast.LENGTH_SHORT,
-                            fontSize: 16.0,
-                          );
-
-                          // DocumentSnapshot<Map<String, dynamic>> userDocument = await FirebaseFirestore.instance.collection('users').doc(uploadedById).get();
-
-                          // String commenterName = userDoc.get('name');
-                          //
-                          // String token = userDocument.get('token');
-
-                          // if(uploadedById != uid) {
-                          //   // fireApi.sendNotifyFromFirebase(title: 'comment from $commenterName', body: _commentController.text, sendNotifyTo: token, type: 'comment', taskID: postId,uploadedById: uploadedById);
-                          // }
-
-                          _commentController.clear();
                         }
                       },
                       color: Colors.pink.shade700,

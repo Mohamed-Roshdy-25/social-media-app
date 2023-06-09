@@ -57,8 +57,7 @@ class GlobalMethods {
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       configureLocalNotifications(message,context);
-      showLocalNotification(
-          message.notification ?? const RemoteNotification());
+      showLocalNotification(message.notification ?? const RemoteNotification());
     });
 
     firebaseMessaging.getToken().then((token) {
@@ -94,9 +93,9 @@ class GlobalMethods {
                 builder: (context) => PostDetailsScreen(postId: message.data['postId']),
               ));
         }
-        // else if(message.data['type']=='task'){
-        //   Navigator.push(context, MaterialPageRoute(builder: (context) => const TasksScreen(),));
-        // }
+        else if(message.data['type'] == 'comment'){
+          Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailsScreen(postId: message.data['postId']),));
+        }
       },
     );
   }
