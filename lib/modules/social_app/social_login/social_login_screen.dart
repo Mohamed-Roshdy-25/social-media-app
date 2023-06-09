@@ -8,6 +8,7 @@ import 'package:flutter_learn_app/modules/social_app/social_login/cubit/cubit.da
 import 'package:flutter_learn_app/modules/social_app/social_login/cubit/states.dart';
 import 'package:flutter_learn_app/modules/social_app/social_register/social_register_screen.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
+import 'package:flutter_learn_app/shared/components/constants.dart';
 import 'package:flutter_learn_app/shared/network/local/cache_helper.dart';
 
 class SocialLoginScreen extends StatelessWidget {
@@ -28,6 +29,7 @@ class SocialLoginScreen extends StatelessWidget {
             }
           if(state is SocialLoginSuccessState)
             {
+              uId = state.uId;
               CacheHelper.saveData(
                   key: 'uId', value: state.uId)
                   .then((value) {

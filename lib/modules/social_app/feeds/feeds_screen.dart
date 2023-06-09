@@ -1,84 +1,94 @@
-// ignore_for_file: sized_box_for_whitespace, unnecessary_null_comparison, prefer_is_empty
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_learn_app/global_method.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/states.dart';
 import 'package:flutter_learn_app/modules/social_app/comments/comments_screen.dart';
+import 'package:flutter_learn_app/modules/social_app/post_details/post_details_screen.dart';
+import 'package:flutter_learn_app/modules/social_app/settings/settings_screen.dart';
+import 'package:flutter_learn_app/shared/components/components.dart';
 import 'package:flutter_learn_app/shared/network/local/cache_helper.dart';
 import 'package:flutter_learn_app/shared/styles/colors.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
 
-class FeedsScreen extends StatelessWidget {
+class FeedsScreen extends StatefulWidget {
   const FeedsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<FeedsScreen> createState() => _FeedsScreenState();
+}
+
+class _FeedsScreenState extends State<FeedsScreen> {
+
+
+  Future<void> setupInteractedMessage() async {
+    await FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) {
+        _handleMessage(message);
+      }
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  }
+
+  void _handleMessage(RemoteMessage message) async {
+    if (message.data['type'] == 'post') {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PostDetailsScreen(postId: message.data['postId']),
+          ));
+    }
+    // if (message.data['type'] == 'comment') {
+    //   Navigator.push(
+    //       context,
+    //       MaterialPageRoute(
+    //         builder: (context) => TaskDetailsScreen(
+    //           taskId: message.data['task_id'],
+    //           uploadedBy: message.data['uploaded_by'],
+    //         ),
+    //       ));
+    // }
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    setupInteractedMessage();
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SocialCubit, SocialStates>(
-      builder: (context, state) {
-        return ConditionalBuilder(
-          condition: state is! SocialGetPostsLoadingState,
-          builder: (context) => SingleChildScrollView(
+    builder: (context, state) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: SocialCubit.get(context).posts,
+        builder: (context, snapshot) {
+          if(snapshot.hasData) {
+            return ListView.separated(
             physics: const BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                // Card(
-                //   clipBehavior: Clip.antiAliasWithSaveLayer,
-                //   elevation: 5.0,
-                //   margin: const EdgeInsets.all(
-                //     8.0,
-                //   ),
-                //   child: Stack(
-                //     alignment: AlignmentDirectional.topEnd,
-                //     children: [
-                //       const Image(
-                //         image: NetworkImage(
-                //             'https://img.freepik.com/free-photo/cheerful-male-gives-nice-offer-advertises-new-product-sale-stands-torn-paper-hole-has-positive-expression_273609-38452.jpg?t=st=1650581197~exp=1650581797~hmac=7219115959c9873ed25c451d38943c5cc35ec462303b01e9056ad7dbaeb7e8d0&w=740'),
-                //         fit: BoxFit.cover,
-                //         height: 200.0,
-                //         width: double.infinity,
-                //       ),
-                //       Padding(
-                //         padding: const EdgeInsets.all(8.0),
-                //         child: Text(
-                //           'communicate with friends',
-                //           style:
-                //               Theme.of(context).textTheme.titleMedium?.copyWith(
-                //                     color: Colors.white,
-                //                   ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                    stream: SocialCubit.get(context).posts,
-                    builder: (context, snapshot) {
-                      return ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return buildPostItem(
-                              snapshot.data?.docs[index], context, index);
-                        },
-                        separatorBuilder: (context, index) => const SizedBox(
-                          height: 8.0,
-                        ),
-                        itemCount: snapshot.data?.docs.length ?? 0,
-                      );
-                    }),
-                const SizedBox(
-                  height: 8.0,
-                ),
-              ],
+            itemBuilder: (context, index) {
+              return buildPostItem(
+                  snapshot.data?.docs[index], context, index);
+            },
+            separatorBuilder: (context, index) => const SizedBox(
+              height: 8.0,
             ),
-          ),
-          fallback: (context) => const Center(child: CircularProgressIndicator()),
-        );
-      },
-    );
+            itemCount: snapshot.data?.docs.length ?? 0,
+          );
+          }else
+            {
+              return const Center(child: CircularProgressIndicator(),);
+            }
+
+        });
+  },
+);
   }
 
   Widget buildPostItem(QueryDocumentSnapshot<Map<String, dynamic>>? model, context, index) {
@@ -95,59 +105,62 @@ class FeedsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 25.0,
-                  backgroundImage: NetworkImage(
-                    '${model!['image']}',
+            InkWell(
+              onTap: () => navigateTo(context, SettingsScreen(userId: model?['uId']??'')),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 25.0,
+                    backgroundImage: NetworkImage(
+                      '${model!['image']}',
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  width: 15.0,
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            '${model['name']}',
-                            style: const TextStyle(
-                              height: 1.4,
+                  const SizedBox(
+                    width: 15.0,
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              '${model['name']}',
+                              style: const TextStyle(
+                                height: 1.4,
+                              ),
                             ),
-                          ),
-                          const SizedBox(
-                            width: 5.0,
-                          ),
-                          const Icon(
-                            Icons.check_circle,
-                            color: defaultColor,
-                            size: 16.0,
-                          ),
-                        ],
-                      ),
-                      Text(
-                        '${model['dataTime']?.split(':')[0]}:${model['dataTime']?.split(':')[1]}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              height: 1.4,
+                            const SizedBox(
+                              width: 5.0,
                             ),
-                      ),
-                    ],
+                            const Icon(
+                              Icons.check_circle,
+                              color: defaultColor,
+                              size: 16.0,
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '${model['dataTime']?.split(':')[0]}:${model['dataTime']?.split(':')[1]}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                height: 1.4,
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  width: 15.0,
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.more_horiz,
-                    size: 16.0,
+                  const SizedBox(
+                    width: 15.0,
                   ),
-                ),
-              ],
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.more_horiz,
+                      size: 16.0,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(
               height: 15.0,
@@ -168,13 +181,13 @@ class FeedsScreen extends StatelessWidget {
                 bottom: 10.0,
                 top: 5.0,
               ),
-              child: Container(
+              child: SizedBox(
                 width: double.infinity,
                 child: Wrap(
                   children: [
                     Padding(
                       padding: const EdgeInsetsDirectional.only(end: 6.0),
-                      child: Container(
+                      child: SizedBox(
                         height: 25.0,
                         child: MaterialButton(
                           onPressed: () {},
@@ -192,7 +205,7 @@ class FeedsScreen extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsetsDirectional.only(end: 6.0),
-                      child: Container(
+                      child: SizedBox(
                         height: 25.0,
                         child: MaterialButton(
                           onPressed: () {},
@@ -316,18 +329,6 @@ class FeedsScreen extends StatelessWidget {
                 ),
                 InkWell(
                   onTap: () async {
-                    // if (_isLiked) {
-                    // _unlikePost();
-                    // setState(() {
-                    // _isLiked = false;
-                    // });
-                    // } else {
-                    // _likePost();
-                    // setState(() {
-                    // _isLiked = true;
-                    // });
-                    // }
-
                     String uid = CacheHelper.getData(key: 'uId');
 
                     if (_isLiked) {

@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_learn_app/modules/social_app/settings/settings_screen.dart';
+import 'package:flutter_learn_app/shared/components/components.dart';
 import 'package:flutter_learn_app/shared/styles/colors.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
 
@@ -69,46 +71,49 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   _searchItem(context,model){
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 25.0,
-          backgroundImage: NetworkImage(
-            '${model!['image']}',
+    return InkWell(
+      onTap: () => navigateTo(context, SettingsScreen(userId: model?['uId']??'')),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 25.0,
+            backgroundImage: NetworkImage(
+              '${model!['image']}',
+            ),
           ),
-        ),
-        const SizedBox(
-          width: 15.0,
-        ),
-        Expanded(
-          child: Row(
-            children: [
-              Text(
-                '${model['name']}',
-                style: const TextStyle(
-                  height: 1.4,
+          const SizedBox(
+            width: 15.0,
+          ),
+          Expanded(
+            child: Row(
+              children: [
+                Text(
+                  '${model['name']}',
+                  style: const TextStyle(
+                    height: 1.4,
+                  ),
                 ),
-              ),
-              const SizedBox(
-                width: 5.0,
-              ),
-              const Icon(
-                Icons.check_circle,
-                color: defaultColor,
-                size: 16.0,
-              ),
-            ],
+                const SizedBox(
+                  width: 5.0,
+                ),
+                const Icon(
+                  Icons.check_circle,
+                  color: defaultColor,
+                  size: 16.0,
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(
-          width: 15.0,
-        ),
-        const Icon(
-          IconBroken.Arrow___Right_2,
-          color: defaultColor,
-          size: 16.0,
-        ),
-      ],
+          const SizedBox(
+            width: 15.0,
+          ),
+          const Icon(
+            IconBroken.Arrow___Right_2,
+            color: defaultColor,
+            size: 16.0,
+          ),
+        ],
+      ),
     );
   }
 }

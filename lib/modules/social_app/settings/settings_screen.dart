@@ -1,8 +1,7 @@
 // ignore_for_file: sized_box_for_whitespace
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
@@ -17,227 +16,318 @@ import 'package:flutter_learn_app/shared/network/local/cache_helper.dart';
 import 'package:flutter_learn_app/shared/styles/colors.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+class SettingsScreen extends StatefulWidget {
+  final String userId;
+  const SettingsScreen({Key? key, required this.userId}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    SocialCubit.get(context).getUserData();
-    return BlocBuilder<SocialCubit, SocialStates>(
-      builder: (context, state) {
-        var userModel = SocialCubit.get(context).userModel;
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
 
-        if(state is SocialGetUserLoadingState){
-          return const Center(child: CircularProgressIndicator(),);
-        }
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
+  Widget build(BuildContext context) {
+    bool _isSameUser = widget.userId == uId;
+    return Scaffold(
+      body: SafeArea(
+        child: BlocBuilder<SocialCubit, SocialStates>(
+          builder: (context, state) {
+            return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                 stream: FirebaseFirestore.instance
-                    .collection('posts')
+                    .collection('users')
+                    .doc(_isSameUser ? uId : widget.userId)
                     .snapshots(),
-                builder: (context, snapshot) {
-                  List<QueryDocumentSnapshot<Map<String, dynamic>>> currentUserPosts = snapshot.data?.docs.where((element) => element['uId'] == CacheHelper.getData(key: 'uId')).toList()??[];
-                  List<QueryDocumentSnapshot<Map<String, dynamic>>> currentUserImages = currentUserPosts.where((element) => element['postImage'] != '').toList();
-                  
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      height: 190.0,
-                      child: Stack(
-                        alignment: AlignmentDirectional.bottomCenter,
-                        children: [
-                          Align(
-                            child: Container(
-                              height: 140.0,
-                              width: double.infinity,
-                              decoration:  BoxDecoration(
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(4.0),
-                                    topRight: Radius.circular(4.0),
+                builder: (context, userSnapshot) {
+                  bool _isFollow =
+                      userSnapshot.data?['followers']?.contains(uId) ?? false;
+                  if (userSnapshot.hasData) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: StreamBuilder<
+                            QuerySnapshot<Map<String, dynamic>>>(
+                            stream: FirebaseFirestore.instance
+                                .collection('posts')
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              List<QueryDocumentSnapshot<Map<String, dynamic>>>
+                              currentUserPosts = snapshot.data?.docs
+                                  .where((element) =>
+                              element['uId'] ==
+                                  (_isSameUser
+                                      ? CacheHelper.getData(
+                                      key: 'uId')
+                                      : widget.userId))
+                                  .toList() ??
+                                  [];
+                              List<QueryDocumentSnapshot<Map<String, dynamic>>>
+                              currentUserImages = currentUserPosts
+                                  .where((element) =>
+                              element['postImage'] != '')
+                                  .toList();
+
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    height: 190.0,
+                                    child: Stack(
+                                      alignment:
+                                      AlignmentDirectional.bottomCenter,
+                                      children: [
+                                        Align(
+                                          child: Container(
+                                            height: 140.0,
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                const BorderRadius.only(
+                                                  topLeft: Radius.circular(4.0),
+                                                  topRight:
+                                                  Radius.circular(4.0),
+                                                ),
+                                                image: DecorationImage(
+                                                  image: NetworkImage(
+                                                      '${userSnapshot.data?['cover']}'),
+                                                  fit: BoxFit.cover,
+                                                )),
+                                          ),
+                                          alignment:
+                                          AlignmentDirectional.topCenter,
+                                        ),
+                                        CircleAvatar(
+                                          radius: 64.0,
+                                          backgroundColor: Theme.of(context)
+                                              .scaffoldBackgroundColor,
+                                          child: CircleAvatar(
+                                            radius: 60.0,
+                                            backgroundImage: NetworkImage(
+                                              '${userSnapshot.data?['image']}',
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                        '${userModel?.cover}'),
-                                    fit: BoxFit.cover,
-                                  )),
-                            ),
-                            alignment: AlignmentDirectional.topCenter,
-                          ),
-                          CircleAvatar(
-                            radius: 64.0,
-                            backgroundColor:
-                                Theme.of(context).scaffoldBackgroundColor,
-                            child: CircleAvatar(
-                              radius: 60.0,
-                              backgroundImage: NetworkImage(
-                                '${userModel?.image}',
-                              ),
-                            ),
-                          ),
-                        ],
+                                  const SizedBox(
+                                    height: 5.0,
+                                  ),
+                                  Text(
+                                    '${userSnapshot.data?['name']}',
+                                    style:
+                                    Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  Text(
+                                    '${userSnapshot.data?['bio']}',
+                                    style:
+                                    Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 20.0,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: InkWell(
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  '${currentUserPosts.length}',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleSmall,
+                                                ),
+                                                Text(
+                                                  'Posts',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall,
+                                                ),
+                                              ],
+                                            ),
+                                            onTap: () {},
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: InkWell(
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  currentUserImages.length
+                                                      .toString(),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleSmall,
+                                                ),
+                                                Text(
+                                                  'Photos',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall,
+                                                ),
+                                              ],
+                                            ),
+                                            onTap: () {
+                                              navigateTo(
+                                                  context,
+                                                  UserImagesScreen(
+                                                      images:
+                                                      currentUserImages));
+                                            },
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: InkWell(
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  userSnapshot
+                                                      .data?['followers']
+                                                      ?.length
+                                                      .toString() ??
+                                                      '',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleSmall,
+                                                ),
+                                                Text(
+                                                  'Followers',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall,
+                                                ),
+                                              ],
+                                            ),
+                                            onTap: () {},
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: InkWell(
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  userSnapshot
+                                                      .data?['following']
+                                                      .length
+                                                      .toString() ??
+                                                      '',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleSmall,
+                                                ),
+                                                Text(
+                                                  'Following',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall,
+                                                ),
+                                              ],
+                                            ),
+                                            onTap: () {},
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: widget.userId == uId
+                                              ? () async {
+                                            await Future.wait([
+                                              SocialCubit.get(context)
+                                                  .signOut(),
+                                              CacheHelper.removeData(
+                                                  key: 'uId'),
+                                            ]);
+                                            navigateAndFinish(context,
+                                                SocialLoginScreen());
+                                          }
+                                              : () async {
+                                            if (_isFollow) {
+                                              await unfollowUser(
+                                                  uId ?? '',
+                                                  widget.userId);
+                                              FirebaseMessaging.instance.unsubscribeFromTopic(widget.userId);
+                                            } else {
+                                              await followUser(uId ?? '',
+                                                  widget.userId);
+                                              FirebaseMessaging.instance.subscribeToTopic(widget.userId);
+                                            }
+                                          },
+                                          child: Text(
+                                            widget.userId == uId
+                                                ? 'Logout'
+                                                : _isFollow
+                                                ? 'UnFollow'
+                                                : 'Follow',
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 10.0,
+                                      ),
+                                      OutlinedButton(
+                                        onPressed: () {
+                                          navigateTo(
+                                              context, EditProfileScreen());
+                                        },
+                                        child: const Icon(
+                                          IconBroken.Edit,
+                                          size: 16.0,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  Column(
+                                    children: [
+                                      ListView.separated(
+                                        shrinkWrap: true,
+                                        physics:
+                                        const NeverScrollableScrollPhysics(),
+                                        itemBuilder: (context, index) {
+                                          return buildPostItem(
+                                              currentUserPosts[index],
+                                              context,
+                                              index);
+                                        },
+                                        separatorBuilder: (context, index) =>
+                                        const SizedBox(
+                                          height: 8.0,
+                                        ),
+                                        itemCount: currentUserPosts.length,
+                                      ),
+                                      const SizedBox(
+                                        height: 8.0,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            }),
                       ),
-                    ),
-                    const SizedBox(
-                      height: 5.0,
-                    ),
-                    Text(
-                      '${userModel?.name}',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    Text(
-                      '${userModel?.bio}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 20.0,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              child: Column(
-                                children: [
-                                  Text(
-                                    '${currentUserPosts.length}',
-                                    style: Theme.of(context).textTheme.titleSmall,
-                                  ),
-                                  Text(
-                                    'Posts',
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                              onTap: () {},
-                            ),
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              child: Column(
-                                children: [
-                                  Text(
-                                    '${currentUserImages.length}',
-                                    style: Theme.of(context).textTheme.titleSmall,
-                                  ),
-                                  Text(
-                                    'Photos',
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                              onTap: () {
-                                navigateTo(context, UserImagesScreen(images: currentUserImages));
-                              },
-                            ),
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              child: Column(
-                                children: [
-                                  Text(
-                                    '10K',
-                                    style: Theme.of(context).textTheme.titleSmall,
-                                  ),
-                                  Text(
-                                    'Followers',
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                              onTap: () {},
-                            ),
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              child: Column(
-                                children: [
-                                  Text(
-                                    '64',
-                                    style: Theme.of(context).textTheme.titleSmall,
-                                  ),
-                                  Text(
-                                    'Followings',
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                              onTap: () {},
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              await FirebaseAuth.instance.signOut();
-                              await CacheHelper.removeData(key: 'uId');
-                              uId = null;
-                              navigateAndFinish(context, SocialLoginScreen());
-                            },
-                            child: const Text(
-                              'Logout',
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10.0,),
-                        OutlinedButton(
-                          onPressed: (){
-                            navigateTo(context, EditProfileScreen());
-                          },
-                          child: const Icon(
-                            IconBroken.Edit,
-                            size: 16.0,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20,),
-                    BlocBuilder<SocialCubit, SocialStates>(
-                      builder: (context, state) {
-                        return ConditionalBuilder(
-                          condition: state is! SocialGetPostsLoadingState,
-                          builder: (context) => Column(
-                            children: [
-                              ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  return buildPostItem(
-                                      currentUserPosts[index], context, index);
-                                },
-                                separatorBuilder: (context, index) => const SizedBox(
-                                  height: 8.0,
-                                ),
-                                itemCount: currentUserPosts.length,
-                              ),
-                              const SizedBox(
-                                height: 8.0,
-                              ),
-                            ],
-                          ),
-                          fallback: (context) => const Center(child: CircularProgressIndicator()),
-                        );
-                      },
-                    ),
-                  ],
-                );
-              }
-            ),
-          ),
-        );
-      },
+                    );
+                  } else {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                });
+          },
+        ),
+      ),
     );
   }
 
-  Widget buildPostItem(QueryDocumentSnapshot<Map<String, dynamic>>? model, context, index) {
-    String uid = CacheHelper.getData(key: 'uId');
+  Widget buildPostItem(
+      QueryDocumentSnapshot<Map<String, dynamic>>? model, context, index) {
+    String uid = CacheHelper.getData(key: 'uId') ?? '';
     bool _isLiked = model?['likes']?.contains(uid) ?? false;
     return Card(
       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -286,8 +376,8 @@ class SettingsScreen extends StatelessWidget {
                       Text(
                         '${model['dataTime']?.split(':')[0]}:${model['dataTime']?.split(':')[1]}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          height: 1.4,
-                        ),
+                              height: 1.4,
+                            ),
                       ),
                     ],
                   ),
@@ -296,7 +386,9 @@ class SettingsScreen extends StatelessWidget {
                   width: 15.0,
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+
+                  },
                   icon: const Icon(
                     Icons.more_horiz,
                     size: 16.0,
@@ -338,9 +430,9 @@ class SettingsScreen extends StatelessWidget {
                           child: Text(
                             '#software',
                             style:
-                            Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: defaultColor,
-                            ),
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: defaultColor,
+                                    ),
                           ),
                         ),
                       ),
@@ -356,9 +448,9 @@ class SettingsScreen extends StatelessWidget {
                           child: Text(
                             '#flutter',
                             style:
-                            Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: defaultColor,
-                            ),
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: defaultColor,
+                                    ),
                           ),
                         ),
                       ),
@@ -398,8 +490,7 @@ class SettingsScreen extends StatelessWidget {
                             ),
                             Text(
                               '${model['likesCount']}',
-                              style:
-                              Theme.of(context).textTheme.bodySmall,
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
                         ),
@@ -449,7 +540,12 @@ class SettingsScreen extends StatelessWidget {
                 Expanded(
                   child: InkWell(
                     onTap: () => showBottomSheet(
-                      context: context, builder: (context) => CommentsScreen(postId: model.id, uploadedById: model['uId'],),),
+                      context: context,
+                      builder: (context) => CommentsScreen(
+                        postId: model.id,
+                        uploadedById: model['uId'],
+                      ),
+                    ),
                     child: Row(
                       children: [
                         CircleAvatar(
@@ -471,18 +567,6 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 InkWell(
                   onTap: () async {
-                    // if (_isLiked) {
-                    // _unlikePost();
-                    // setState(() {
-                    // _isLiked = false;
-                    // });
-                    // } else {
-                    // _likePost();
-                    // setState(() {
-                    // _isLiked = true;
-                    // });
-                    // }
-
                     String uid = CacheHelper.getData(key: 'uId');
 
                     if (_isLiked) {
@@ -510,7 +594,9 @@ class SettingsScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(
-                        _isLiked ? Icons.favorite : Icons.favorite_border_outlined,
+                        _isLiked
+                            ? Icons.favorite
+                            : Icons.favorite_border_outlined,
                         size: 16.0,
                         color: Colors.red,
                       ),
@@ -530,5 +616,58 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> followUser(String userId, String followedUserId) async {
+    try {
+      await Future.wait([
+        updateFollowing(userId, followedUserId),
+        updateFollowers(userId, followedUserId),
+      ]);
+    } catch (error) {
+      showErrorDialog(error: 'Failed to follow user: $error', context: context);
+    }
+  }
+
+  Future<void> updateFollowing(String userId, String followedUserId) async {
+    await FirebaseFirestore.instance.collection('users').doc(userId).update({
+      'following': FieldValue.arrayUnion([followedUserId]),
+    });
+  }
+
+  Future<void> updateFollowers(String userId, String followedUserId) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(followedUserId)
+        .update({
+      'followers': FieldValue.arrayUnion([userId]),
+    });
+  }
+
+  Future<void> unfollowUser(String userId, String unfollowedUserId) async {
+    try {
+      await Future.wait([
+        removeFollowing(userId, unfollowedUserId),
+        removeFollowers(userId, unfollowedUserId),
+      ]);
+    } catch (error) {
+      showErrorDialog(
+          error: 'Failed to unfollow user: $error', context: context);
+    }
+  }
+
+  Future<void> removeFollowing(String userId, String unfollowedUserId) async {
+    await FirebaseFirestore.instance.collection('users').doc(userId).update({
+      'following': FieldValue.arrayRemove([unfollowedUserId]),
+    });
+  }
+
+  Future<void> removeFollowers(String userId, String unfollowedUserId) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(unfollowedUserId)
+        .update({
+      'followers': FieldValue.arrayRemove([userId]),
+    });
   }
 }

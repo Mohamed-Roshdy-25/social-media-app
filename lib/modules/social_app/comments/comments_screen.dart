@@ -17,6 +17,7 @@ class CommentsScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Expanded(
             child: StreamBuilder<DocumentSnapshot>(
@@ -30,8 +31,7 @@ class CommentsScreen extends StatelessWidget {
                   }
                   return ListView.separated(
                       shrinkWrap: true,
-                      physics:
-                      const BouncingScrollPhysics(),
+                      physics: const BouncingScrollPhysics(),
                       itemBuilder: (ctx, index) {
                         return Column(
                           children: [

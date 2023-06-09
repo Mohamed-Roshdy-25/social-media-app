@@ -64,7 +64,11 @@ class SocialUserUpdateErrorState extends SocialStates {}
 
 class SocialCreatePostLoadingState extends SocialStates {}
 
-class SocialCreatePostSuccessState extends SocialStates {}
+class SocialCreatePostSuccessState extends SocialStates {
+  final String postId;
+
+  SocialCreatePostSuccessState(this.postId);
+}
 
 class SocialCreatePostErrorState extends SocialStates {}
 
@@ -78,6 +82,16 @@ class SocialSendMessageSuccessState extends SocialStates {}
 
 class SocialSendMessageErrorState extends SocialStates {}
 
+class SocialGetMessagesLoadingState extends SocialStates {}
+
 class SocialGetMessagesSuccessState extends SocialStates {}
 
+class SocialGetMessagesErrorState extends SocialStates {}
+
 class SocialSearchState extends SocialStates {}
+
+class SocialSignOutLoadingState extends SocialStates {}
+
+class SocialSignOutSuccessState extends SocialStates {}
+
+class SocialSignOutErrorState extends SocialStates {}
