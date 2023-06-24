@@ -93,3 +93,4 @@ ThemeData lightTheme = ThemeData(
   fontFamily: 'Jannah',
 );
 
+// const Color(0xfff6f5fa)

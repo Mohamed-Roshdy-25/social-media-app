@@ -28,7 +28,7 @@ void main() {
 
 
       if (uId != null) {
-        widget = SocialLayout();
+        widget = const SocialLayout();
       }
       else {
         widget = SocialLoginScreen();

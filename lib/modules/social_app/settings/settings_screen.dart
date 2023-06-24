@@ -4,10 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_learn_app/firebase_notification_api.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/states.dart';
 import 'package:flutter_learn_app/modules/social_app/comments/comments_screen.dart';
 import 'package:flutter_learn_app/modules/social_app/edit_profile/edit_profile_screen.dart';
+import 'package:flutter_learn_app/modules/social_app/likes/likes_screen.dart';
 import 'package:flutter_learn_app/modules/social_app/social_login/social_login_screen.dart';
 import 'package:flutter_learn_app/modules/social_app/user_images/user_images_screen.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
@@ -38,34 +40,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     .doc(_isSameUser ? uId : widget.userId)
                     .snapshots(),
                 builder: (context, userSnapshot) {
+                  if(userSnapshot.data == null){
+                    return Container();
+                  }
                   bool _isFollow =
                       userSnapshot.data?['followers']?.contains(uId) ?? false;
+                  var requestsIds = userSnapshot.data?['receivingRequests']
+                          .map((request) => request['userId'])
+                          .toList() ??
+                      [];
+                  bool _isRequested = requestsIds.contains(uId) ?? false;
                   if (userSnapshot.hasData) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: SingleChildScrollView(
                         physics: const BouncingScrollPhysics(),
                         child: StreamBuilder<
-                            QuerySnapshot<Map<String, dynamic>>>(
+                                QuerySnapshot<Map<String, dynamic>>>(
                             stream: FirebaseFirestore.instance
                                 .collection('posts')
                                 .snapshots(),
                             builder: (context, snapshot) {
                               List<QueryDocumentSnapshot<Map<String, dynamic>>>
-                              currentUserPosts = snapshot.data?.docs
-                                  .where((element) =>
-                              element['uId'] ==
-                                  (_isSameUser
-                                      ? CacheHelper.getData(
-                                      key: 'uId')
-                                      : widget.userId))
-                                  .toList() ??
-                                  [];
+                                  currentUserPosts = snapshot.data?.docs
+                                          .where((element) =>
+                                              element['uId'] ==
+                                              (_isSameUser
+                                                  ? CacheHelper.getData(
+                                                      key: 'uId')
+                                                  : widget.userId))
+                                          .toList() ??
+                                      [];
                               List<QueryDocumentSnapshot<Map<String, dynamic>>>
-                              currentUserImages = currentUserPosts
-                                  .where((element) =>
-                              element['postImage'] != '')
-                                  .toList();
+                                  currentUserImages = currentUserPosts
+                                      .where((element) =>
+                                          element['postImage'] != '')
+                                      .toList();
 
                               return Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -74,7 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     height: 190.0,
                                     child: Stack(
                                       alignment:
-                                      AlignmentDirectional.bottomCenter,
+                                          AlignmentDirectional.bottomCenter,
                                       children: [
                                         Align(
                                           child: Container(
@@ -82,10 +92,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                             width: double.infinity,
                                             decoration: BoxDecoration(
                                                 borderRadius:
-                                                const BorderRadius.only(
+                                                    const BorderRadius.only(
                                                   topLeft: Radius.circular(4.0),
                                                   topRight:
-                                                  Radius.circular(4.0),
+                                                      Radius.circular(4.0),
                                                 ),
                                                 image: DecorationImage(
                                                   image: NetworkImage(
@@ -94,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                 )),
                                           ),
                                           alignment:
-                                          AlignmentDirectional.topCenter,
+                                              AlignmentDirectional.topCenter,
                                         ),
                                         CircleAvatar(
                                           radius: 64.0,
@@ -116,12 +126,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   Text(
                                     '${userSnapshot.data?['name']}',
                                     style:
-                                    Theme.of(context).textTheme.bodyLarge,
+                                        Theme.of(context).textTheme.bodyLarge,
                                   ),
                                   Text(
                                     '${userSnapshot.data?['bio']}',
                                     style:
-                                    Theme.of(context).textTheme.bodySmall,
+                                        Theme.of(context).textTheme.bodySmall,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -174,7 +184,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                   context,
                                                   UserImagesScreen(
                                                       images:
-                                                      currentUserImages));
+                                                          currentUserImages));
                                             },
                                           ),
                                         ),
@@ -184,9 +194,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                               children: [
                                                 Text(
                                                   userSnapshot
-                                                      .data?['followers']
-                                                      ?.length
-                                                      .toString() ??
+                                                          .data?['followers']
+                                                          ?.length
+                                                          .toString() ??
                                                       '',
                                                   style: Theme.of(context)
                                                       .textTheme
@@ -209,9 +219,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                               children: [
                                                 Text(
                                                   userSnapshot
-                                                      .data?['following']
-                                                      .length
-                                                      .toString() ??
+                                                          .data?['following']
+                                                          .length
+                                                          .toString() ??
                                                       '',
                                                   style: Theme.of(context)
                                                       .textTheme
@@ -237,33 +247,79 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         child: OutlinedButton(
                                           onPressed: widget.userId == uId
                                               ? () async {
-                                            await Future.wait([
-                                              SocialCubit.get(context)
-                                                  .signOut(),
-                                              CacheHelper.removeData(
-                                                  key: 'uId'),
-                                            ]);
-                                            navigateAndFinish(context,
-                                                SocialLoginScreen());
-                                          }
+                                                  await Future.wait([
+                                                    SocialCubit.get(context)
+                                                        .signOut(),
+                                                    CacheHelper.removeData(
+                                                        key: 'uId'),
+                                                  ]);
+                                                  navigateAndFinish(context,
+                                                      SocialLoginScreen());
+                                                }
                                               : () async {
-                                            if (_isFollow) {
-                                              await unfollowUser(
-                                                  uId ?? '',
-                                                  widget.userId);
-                                              FirebaseMessaging.instance.unsubscribeFromTopic(widget.userId);
-                                            } else {
-                                              await followUser(uId ?? '',
-                                                  widget.userId);
-                                              FirebaseMessaging.instance.subscribeToTopic(widget.userId);
-                                            }
-                                          },
+                                                  if (_isFollow) {
+                                                    await unfollowUser(
+                                                        uId ?? '',
+                                                        widget.userId);
+                                                    FirebaseMessaging.instance
+                                                        .unsubscribeFromTopic(
+                                                            widget.userId);
+                                                  } else if (_isRequested) {
+                                                    removeFollowRequest(
+                                                      SocialCubit.get(context)
+                                                              .userModel
+                                                              ?.uId ??
+                                                          '',
+                                                      SocialCubit.get(context)
+                                                              .userModel
+                                                              ?.name ??
+                                                          '',
+                                                      SocialCubit.get(context)
+                                                              .userModel
+                                                              ?.image ??
+                                                          '',
+                                                      SocialCubit.get(context)
+                                                          .userModel
+                                                          ?.token ??
+                                                          '',
+                                                      widget.userId,
+                                                    );
+                                                  } else {
+                                                    await sendFollowRequest(
+                                                      SocialCubit.get(context)
+                                                              .userModel
+                                                              ?.uId ??
+                                                          '',
+                                                      SocialCubit.get(context)
+                                                              .userModel
+                                                              ?.name ??
+                                                          '',
+                                                      SocialCubit.get(context)
+                                                              .userModel
+                                                              ?.image ??
+                                                          '',
+                                                      SocialCubit.get(context)
+                                                          .userModel
+                                                          ?.token ??
+                                                          '',
+                                                      widget.userId,
+                                                    );
+                                                    fireApi.sendNotifyFromFirebase(title: 'Friend Request', body: '${SocialCubit.get(context).userModel?.name} asked you to be a friends', sendNotifyTo: userSnapshot.data?['token'], type: 'friend request');
+                                                    // await followUser(uId ?? '',
+                                                    //     widget.userId);
+                                                    // FirebaseMessaging.instance
+                                                    //     .subscribeToTopic(
+                                                    //         widget.userId);
+                                                  }
+                                                },
                                           child: Text(
                                             widget.userId == uId
                                                 ? 'Logout'
                                                 : _isFollow
-                                                ? 'UnFollow'
-                                                : 'Follow',
+                                                    ? 'UnFollow'
+                                                    : _isRequested
+                                                        ? 'Request sent'
+                                                        : 'Follow',
                                           ),
                                         ),
                                       ),
@@ -290,7 +346,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       ListView.separated(
                                         shrinkWrap: true,
                                         physics:
-                                        const NeverScrollableScrollPhysics(),
+                                            const NeverScrollableScrollPhysics(),
                                         itemBuilder: (context, index) {
                                           return buildPostItem(
                                               currentUserPosts[index],
@@ -298,7 +354,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                               index);
                                         },
                                         separatorBuilder: (context, index) =>
-                                        const SizedBox(
+                                            const SizedBox(
                                           height: 8.0,
                                         ),
                                         itemCount: currentUserPosts.length,
@@ -391,15 +447,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onSelected: (String value) async {
                       switch (value) {
                         case 'option1':
-                          if(model['uId'] == uId) {
-                            await FirebaseFirestore.instance.collection('posts').doc(model.id).delete();
+                          if (model['uId'] == uId) {
+                            await FirebaseFirestore.instance
+                                .collection('posts')
+                                .doc(model.id)
+                                .delete();
                           } else {
-                            showErrorDialog(error: 'You don\'t have access to delete this post', context: context);
+                            showErrorDialog(
+                                error:
+                                    'You don\'t have access to delete this post',
+                                context: context);
                           }
                           break;
                       }
                     },
-                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<String>>[
                       PopupMenuItem<String>(
                         value: 'option2',
                         child: Center(
@@ -407,20 +470,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 5.0),
                             child: Text(
                               'Edit',
-                              style: Theme.of(context).textTheme.labelMedium?.copyWith(color: defaultColor),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(color: defaultColor),
                             ),
-                          ),),
+                          ),
+                        ),
                       ),
                       PopupMenuItem<String>(
                         value: 'option1',
                         child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 5.0),
-                              child: Text(
-                                'Delete',
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.red),
-                              ),
-                            ),),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5.0),
+                            child: Text(
+                              'Delete',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(color: Colors.red),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                     child: const Icon(
@@ -529,7 +600,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                         ),
                       ),
-                      onTap: () {},
+                      onTap: () => showBottomSheet(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * .95,
+                        ),
+                        context: context, builder: (context) => LikesScreen(likes: model['likes']),),
                     ),
                   ),
                   Expanded(
@@ -556,7 +631,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                         ),
                       ),
-                      onTap: () {},
+                      onTap: () => showBottomSheet(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * .95,
+                        ),
+                        context: context, builder: (context) => CommentsScreen(postId: model.id, uploadedById: model['uId'],),),
                     ),
                   ),
                 ],
@@ -574,6 +653,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Expanded(
                   child: InkWell(
                     onTap: () => showBottomSheet(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * .95,
+                      ),
                       context: context,
                       builder: (context) => CommentsScreen(
                         postId: model.id,
@@ -622,6 +704,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         'likesCount': FieldValue.increment(1),
                       });
 
+                      final postOwnerDocs = await FirebaseFirestore.instance.collection('users').doc(model['uId']).get();
+
+                      if(model['uId'] != uid) {
+                        fireApi.sendNotifyFromFirebase(title: '${SocialCubit.get(context).userModel?.name} likes your post', sendNotifyTo: postOwnerDocs['token'], type: 'like', postId: model.id,uploadedBy: model['uId'], body: '');
+                      }
+
+
                       _isLiked = true;
                     }
                   },
@@ -650,6 +739,90 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> sendFollowRequest(
+    String userId,
+    String userName,
+    String userImage,
+    String userToken,
+    String followedUserId,
+  ) async {
+    await Future.wait([
+      updateSendingRequests(userId, followedUserId),
+      updateReceivingRequests(userId, userName, userImage, userToken,followedUserId),
+    ]);
+  }
+
+  Future<void> updateSendingRequests(
+      String userId, String followedUserId) async {
+    await FirebaseFirestore.instance.collection('users').doc(userId).update({
+      'sendingRequests': FieldValue.arrayUnion([followedUserId]),
+    });
+  }
+
+  Future<void> updateReceivingRequests(
+    String userId,
+    String userName,
+    String userImage,
+    String userToken,
+    String followedUserId,
+  ) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(followedUserId)
+        .update({
+      'receivingRequests': FieldValue.arrayUnion([
+        {
+          'userId': userId,
+          'userName': userName,
+          'userToken': userToken,
+          'userImage': userImage,
+        }
+      ]),
+    });
+  }
+
+  Future<void> removeFollowRequest(
+    String userId,
+    String userName,
+    String userImage,
+    String userToken,
+    String followedUserId,
+  ) async {
+    await Future.wait([
+      removeSendingRequests(userId, followedUserId),
+      removeReceivingRequests(userId, userName, userImage, userToken,followedUserId),
+    ]);
+  }
+
+  Future<void> removeSendingRequests(
+      String userId, String followedUserId) async {
+    await FirebaseFirestore.instance.collection('users').doc(userId).update({
+      'sendingRequests': FieldValue.arrayRemove([followedUserId]),
+    });
+  }
+
+  Future<void> removeReceivingRequests(
+    String userId,
+    String userName,
+    String userImage,
+    String userToken,
+    String followedUserId,
+  ) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(followedUserId)
+        .update({
+      'receivingRequests': FieldValue.arrayRemove([
+        {
+          'userId': userId,
+          'userName': userName,
+          'userToken': userToken,
+          'userImage': userImage,
+        }
+      ]),
+    });
   }
 
   Future<void> followUser(String userId, String followedUserId) async {

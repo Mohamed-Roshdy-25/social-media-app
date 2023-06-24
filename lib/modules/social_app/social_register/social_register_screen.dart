@@ -24,7 +24,7 @@ class SocialRegisterScreen extends StatelessWidget {
       child: BlocConsumer<SocialRegisterCubit, SocialRegisterStates>(
         listener: (context, state) {
           if (state is SocialCreateUserSuccessState) {
-            navigateAndFinish(context, SocialLayout());
+            navigateAndFinish(context, const SocialLayout());
           }
         },
         builder: (context, state) {

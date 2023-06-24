@@ -38,9 +38,11 @@ class SocialRegisterCubit extends Cubit<SocialRegisterStates> {
         uId: value.user!.uid,
       );
 
-    }).catchError((error) {
-      emit(SocialRegisterErrorState(error.toString()));
-    });
+    })
+    //     .catchError((error) {
+    //   emit(SocialRegisterErrorState(error.toString()));
+    // })
+    ;
   }
 
   void userCreate({
@@ -69,9 +71,11 @@ class SocialRegisterCubit extends Cubit<SocialRegisterStates> {
         .set(model.toMap())
         .then((value) {
       emit(SocialCreateUserSuccessState());
-    }).catchError((error) {
-      emit(SocialCreateUserErrorState(error.toString()));
-    });
+    })
+    //     .catchError((error) {
+    //   emit(SocialCreateUserErrorState(error.toString()));
+    // })
+    ;
   }
 
   bool obscure = true;

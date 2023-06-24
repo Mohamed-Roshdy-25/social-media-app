@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class FirebaseNotificationApi {
@@ -12,7 +13,9 @@ class FirebaseNotificationApi {
      String? postId,
      String? uploadedBy,
   })async{
-     print('sending *******************');
+     if (kDebugMode) {
+       print('sending *******************');
+     }
      try {
        await http.post(
          Uri.parse('https://fcm.googleapis.com/fcm/send'),
@@ -21,7 +24,8 @@ class FirebaseNotificationApi {
            'Authorization': 'key=AAAALUgmyYs:APA91bE5KUitTvHCAovTqrOsEdINsUxvBMLmfP3E4Es-CBTdcnDTNtNWvQfq9fJGMnA87aIls_yZUaY1tMSUSv-PbEsMo0hrsycZ0akKH3VQtv2M3sVdjI0wCvT-NIifKrOVa-3kUEbl',
          },
 
-         body: constructFCMPayload(body: body,
+         body: constructFCMPayload(
+             body: body,
              title: title,
              sendNotifyTo: sendNotifyTo,
              type: type,
@@ -29,10 +33,14 @@ class FirebaseNotificationApi {
              uploadedBy: uploadedBy),
        );
      }catch(error){
-       print('${error.toString()} *******************');
+       if (kDebugMode) {
+         print('${error.toString()} *******************');
+       }
      }
 
-     print('sent *******************');
+     if (kDebugMode) {
+       print('sent *******************');
+     }
   }
 
 

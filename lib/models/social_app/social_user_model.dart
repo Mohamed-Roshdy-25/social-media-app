@@ -13,6 +13,8 @@ class SocialUserModel
    bool? isEmailVerified;
    List<String>? following;
    List<String>? followers;
+   List<String>? sendingRequests;
+   List<ReceivingRequest>? receivingRequests;
 
 
 
@@ -28,6 +30,8 @@ class SocialUserModel
       this.isEmailVerified,
       this.following,
       this.followers,
+      this.sendingRequests,
+      this.receivingRequests,
    });
 
    SocialUserModel.fromJson(Map<String, dynamic>? json)
@@ -43,6 +47,8 @@ class SocialUserModel
       isEmailVerified = json?['isEmailVerified'];
       following = List<String>.from(json?['following']??[]);
       followers = List<String>.from(json?['followers']??[]);
+      sendingRequests = List<String>.from(json?['sendingRequests']??[]);
+      receivingRequests = List<ReceivingRequest>.from(json?['receivingRequests'].map((x) => ReceivingRequest.fromJson(x)));
    }
 
    Map<String, dynamic> toMap()
@@ -59,6 +65,35 @@ class SocialUserModel
          'isEmailVerified': isEmailVerified,
          'following': List<dynamic>.from(following??[]),
          'followers': List<dynamic>.from(followers??[]),
+         'sendingRequests': List<dynamic>.from(sendingRequests??[]),
+         'receivingRequests': List<dynamic>.from(receivingRequests?.map((receivingRequest) => receivingRequest.toMap())??[]),
+      };
+   }
+}
+
+class ReceivingRequest {
+   String? uId;
+   String? name;
+   String? image;
+   String? token;
+
+   ReceivingRequest(this.uId, this.name, this.image, this.token);
+
+   ReceivingRequest.fromJson(Map<String, dynamic>? json)
+   {
+      name = json?['userName'];
+      uId = json?['userId'];
+      image = json?['userImage'];
+      token = json?['userToken'];
+   }
+
+   Map<String, dynamic> toMap()
+   {
+      return{
+         'userName': name,
+         'userId': uId,
+         'userImage': image,
+         'userToken': token,
       };
    }
 }

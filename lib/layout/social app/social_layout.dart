@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_learn_app/global_method.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/states.dart';
+import 'package:flutter_learn_app/modules/social_app/friend_requests/friend_requests_screen.dart';
 import 'package:flutter_learn_app/modules/social_app/new_post/new_post_screen.dart';
 import 'package:flutter_learn_app/modules/social_app/post_details/post_details_screen.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
@@ -32,18 +33,16 @@ class _SocialLayoutState extends State<SocialLayout> {
 
   void _handleMessage(RemoteMessage message) async {
     if (message.data['type'] == 'post') {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PostDetailsScreen(postId: message.data['postId']),
-          ));
+      navigateTo(context, PostDetailsScreen(postId: message.data['postId']));
     }
     if (message.data['type'] == 'comment') {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PostDetailsScreen(postId: message.data['postId']),
-          ));
+      navigateTo(context, PostDetailsScreen(postId: message.data['postId']));
+    }
+    if(message.data['type'] == 'friend request'){
+      navigateTo(context, const FriendRequestsScreen());
+    }
+    if (message.data['type'] == 'like') {
+      navigateTo(context, PostDetailsScreen(postId: message.data['postId']));
     }
   }
 
@@ -75,6 +74,12 @@ class _SocialLayoutState extends State<SocialLayout> {
                 IconButton(
                   onPressed: () {},
                   icon: const Icon(IconBroken.Notification),
+                ),
+                IconButton(
+                  onPressed: () {
+                    navigateTo(context, const FriendRequestsScreen());
+                  },
+                  icon: const Icon(IconBroken.Add_User),
                 ),
               ],
             ),

@@ -5,13 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_learn_app/firebase_notification_api.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/states.dart';
-import 'package:flutter_learn_app/modules/social_app/comments/comments_screen.dart';
+import 'package:flutter_learn_app/modules/social_app/likes/likes_screen.dart';
 import 'package:flutter_learn_app/modules/social_app/settings/settings_screen.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
-import 'package:flutter_learn_app/shared/components/constants.dart';
 import 'package:flutter_learn_app/shared/network/local/cache_helper.dart';
 import 'package:flutter_learn_app/shared/styles/colors.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
+import 'package:flutter_learn_app/shared/widgets/comment_widget.dart';
 import 'package:uuid/uuid.dart';
 
 class PostDetailsScreen extends StatefulWidget {
@@ -144,59 +144,6 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
                             Text(
                               '${model['text']}',
                             ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: 10.0,
-                              top: 5.0,
-                            ),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: Wrap(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsetsDirectional.only(end: 6.0),
-                                    child: SizedBox(
-                                      height: 25.0,
-                                      child: MaterialButton(
-                                        onPressed: () {},
-                                        minWidth: 1.0,
-                                        padding: EdgeInsets.zero,
-                                        child: Text(
-                                          '#software',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                color: defaultColor,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsetsDirectional.only(end: 6.0),
-                                    child: SizedBox(
-                                      height: 25.0,
-                                      child: MaterialButton(
-                                        onPressed: () {},
-                                        minWidth: 1.0,
-                                        padding: EdgeInsets.zero,
-                                        child: Text(
-                                          '#flutter',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                color: defaultColor,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
                           if (model['postImage'] != '')
                             Padding(
                               padding: const EdgeInsetsDirectional.only(
@@ -233,7 +180,11 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
                                         ],
                                       ),
                                     ),
-                                    onTap: () {},
+                                    onTap: () => showBottomSheet(
+                                      constraints: BoxConstraints(
+                                        maxHeight: MediaQuery.of(context).size.height *.95
+                                      ),
+                                      context: context, builder: (context) => LikesScreen(likes: List<String>.from(model['likes'],)),),
                                   ),
                                 ),
                                 Expanded(
@@ -394,128 +345,131 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
               ),
             ),
           ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Flexible(
-                flex: 3,
-                child: TextField(
-                  focusNode: _focusNode,
-                  maxLength: 200,
-                  controller: _commentController,
-                  style: const TextStyle(
-                    color: Colors.blue,
-                  ),
-                  keyboardType: TextInputType.text,
-                  maxLines: 1,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                    filled: true,
-                    fillColor: Theme.of(context)
-                        .scaffoldBackgroundColor,
-                    enabledBorder:
-                    const OutlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Colors.pink),
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: 3,
+                  child: TextField(
+                    focusNode: _focusNode,
+                    maxLength: 200,
+                    controller: _commentController,
+                    style: const TextStyle(
+                      color: Colors.blue,
                     ),
-                    errorBorder:
-                    const OutlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Colors.red),
-                    ),
-                    focusedBorder:
-                    const OutlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Colors.pink),
-                    ),
-                  ),
-                  onTapOutside: (event) => _focusNode.unfocus(),
-                ),
-              ),
-              Flexible(
-                  flex: 1,
-                  child: Padding(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: MaterialButton(
-                      onPressed: () async {
-                        if (_commentController.text.isEmpty) {
-                          showErrorDialog(error: 'Comment can\'t be less than 1 characters', context: context);
-                        }
-                        else {
-                          final commentId = const Uuid().v4();
-
-                          User? user = _auth.currentUser;
-
-                          String uid = user!.uid;
-
-                          final DocumentSnapshot currentUserDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-
-                          FirebaseFirestore.instance.collection('posts').doc(model.id).update({'comments': FieldValue
-                              .arrayUnion([
-                            {
-                              'userId': currentUserDoc.get('uId'),
-                              'commentId': commentId,
-                              'name': currentUserDoc.get('name'),
-                              'commentBody': _commentController.text,
-                              'time': Timestamp.now(),
-                              'userImageUrl': currentUserDoc.get('image'),
-                            }
-                          ])
-                          }).then((value) async {
-                            _commentController.clear();
-
-                            DocumentSnapshot<Map<String, dynamic>> postOwnerDocument = await FirebaseFirestore.instance.collection('users').doc(model['uId']).get();
-
-                            String commenterName = currentUserDoc.get('name');
-
-                            String token = postOwnerDocument.get('token');
-
-                            if(model['uId'] != uid) {
-                              fireApi.sendNotifyFromFirebase(title: '$commenterName add comment on your post', body: _commentController.text, sendNotifyTo: token, type: 'comment', postId: model.id,uploadedBy: model['uId']);
-                            }
-                          });
-
-                          // DocumentSnapshot<Map<String, dynamic>> userDocument = await FirebaseFirestore.instance.collection('users').doc(uploadedById).get();
-
-                          // String commenterName = userDoc.get('name');
-                          //
-                          // String token = userDocument.get('token');
-
-                          // if(uploadedById != uid) {
-                          //   // fireApi.sendNotifyFromFirebase(title: 'comment from $commenterName', body: _commentController.text, sendNotifyTo: token, type: 'comment', taskID: postId,uploadedById: uploadedById);
-                          // }
-
-                          _commentController.clear();
-                        }
-                      },
-                      color: Colors.pink.shade700,
-                      elevation: 10,
-                      shape:
-                      RoundedRectangleBorder(
-                          borderRadius:
-                          BorderRadius
-                              .circular(
-                              13),
-                          side: BorderSide
-                              .none),
-                      child: const Padding(
-                        padding:
-                        EdgeInsets.symmetric(
-                            vertical: 7),
-                        child: Text(
-                          'Post',
-                          style: TextStyle(
-                              color: Colors.white,
-                              // fontSize: 20,
-                              fontWeight:
-                              FontWeight
-                                  .bold),
-                        ),
+                    keyboardType: TextInputType.text,
+                    maxLines: 1,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      filled: true,
+                      fillColor: Theme.of(context)
+                          .scaffoldBackgroundColor,
+                      enabledBorder:
+                      const OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: Colors.pink),
+                      ),
+                      errorBorder:
+                      const OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: Colors.red),
+                      ),
+                      focusedBorder:
+                      const OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: Colors.pink),
                       ),
                     ),
-                  ))
-            ],
+                    onTapOutside: (event) => _focusNode.unfocus(),
+                  ),
+                ),
+                Flexible(
+                    flex: 1,
+                    child: Padding(
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: MaterialButton(
+                        onPressed: () async {
+                          if (_commentController.text.isEmpty) {
+                            showErrorDialog(error: 'Comment can\'t be less than 1 characters', context: context);
+                          }
+                          else {
+                            final commentId = const Uuid().v4();
+
+                            User? user = _auth.currentUser;
+
+                            String uid = user!.uid;
+
+                            final DocumentSnapshot currentUserDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+                            FirebaseFirestore.instance.collection('posts').doc(model.id).update({'comments': FieldValue
+                                .arrayUnion([
+                              {
+                                'userId': currentUserDoc.get('uId'),
+                                'commentId': commentId,
+                                'name': currentUserDoc.get('name'),
+                                'commentBody': _commentController.text,
+                                'time': Timestamp.now(),
+                                'userImageUrl': currentUserDoc.get('image'),
+                              }
+                            ])
+                            }).then((value) async {
+                              _commentController.clear();
+
+                              DocumentSnapshot<Map<String, dynamic>> postOwnerDocument = await FirebaseFirestore.instance.collection('users').doc(model['uId']).get();
+
+                              String commenterName = currentUserDoc.get('name');
+
+                              String token = postOwnerDocument.get('token');
+
+                              if(model['uId'] != uid) {
+                                fireApi.sendNotifyFromFirebase(title: '$commenterName add comment on your post', body: _commentController.text, sendNotifyTo: token, type: 'comment', postId: model.id,uploadedBy: model['uId']);
+                              }
+                            });
+
+                            // DocumentSnapshot<Map<String, dynamic>> userDocument = await FirebaseFirestore.instance.collection('users').doc(uploadedById).get();
+
+                            // String commenterName = userDoc.get('name');
+                            //
+                            // String token = userDocument.get('token');
+
+                            // if(uploadedById != uid) {
+                            //   // fireApi.sendNotifyFromFirebase(title: 'comment from $commenterName', body: _commentController.text, sendNotifyTo: token, type: 'comment', taskID: postId,uploadedById: uploadedById);
+                            // }
+
+                            _commentController.clear();
+                          }
+                        },
+                        color: Colors.pink.shade700,
+                        elevation: 10,
+                        shape:
+                        RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadius
+                                .circular(
+                                13),
+                            side: BorderSide
+                                .none),
+                        child: const Padding(
+                          padding:
+                          EdgeInsets.symmetric(
+                              vertical: 7),
+                          child: Text(
+                            'Post',
+                            style: TextStyle(
+                                color: Colors.white,
+                                // fontSize: 20,
+                                fontWeight:
+                                FontWeight
+                                    .bold),
+                          ),
+                        ),
+                      ),
+                    ))
+              ],
+            ),
           ),
         ],
       ),

@@ -56,7 +56,7 @@ class SocialCubit extends Cubit<SocialStates> {
   ];
 
   List<String> titles = [
-    'Feeds',
+    'Sociality',
     'Chats',
     'Create Post',
     'Users',

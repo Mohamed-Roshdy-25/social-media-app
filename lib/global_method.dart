@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_learn_app/modules/social_app/friend_requests/friend_requests_screen.dart';
 import 'package:flutter_learn_app/modules/social_app/post_details/post_details_screen.dart';
+import 'package:flutter_learn_app/shared/components/components.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -87,14 +89,16 @@ class GlobalMethods {
       initializationSettings,
       onDidReceiveNotificationResponse: (details) {
         if (message.data['type'] == 'post') {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PostDetailsScreen(postId: message.data['postId']),
-              ));
+          navigateTo(context, PostDetailsScreen(postId: message.data['postId']));
         }
-        else if(message.data['type'] == 'comment'){
-          Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailsScreen(postId: message.data['postId']),));
+        if (message.data['type'] == 'comment') {
+          navigateTo(context, PostDetailsScreen(postId: message.data['postId']));
+        }
+        if(message.data['type'] == 'friend request'){
+          navigateTo(context, const FriendRequestsScreen());
+        }
+        if (message.data['type'] == 'like') {
+          navigateTo(context, PostDetailsScreen(postId: message.data['postId']));
         }
       },
     );
