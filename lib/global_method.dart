@@ -49,8 +49,6 @@ class GlobalMethods {
         });
   }
 
-
-
   void registerNotification(context) {
     User? user = _auth.currentUser;
     String? uid = user?.uid;

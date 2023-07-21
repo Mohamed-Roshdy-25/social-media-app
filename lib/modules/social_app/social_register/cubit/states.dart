@@ -14,7 +14,11 @@ class SocialRegisterErrorState extends SocialRegisterStates {
 
 class SocialCreateUserLoadingState extends SocialRegisterStates {}
 
-class SocialCreateUserSuccessState extends SocialRegisterStates {}
+class SocialCreateUserSuccessState extends SocialRegisterStates {
+  final String uId;
+
+  SocialCreateUserSuccessState(this.uId);
+}
 
 class SocialCreateUserErrorState extends SocialRegisterStates {
   final String error;
@@ -22,3 +26,11 @@ class SocialCreateUserErrorState extends SocialRegisterStates {
 }
 
 class SocialRegisterChangeObscureState extends SocialRegisterStates {}
+
+class SocialProfileImagePickedSuccessState extends SocialRegisterStates {}
+
+class SocialProfileImagePickedErrorState extends SocialRegisterStates {}
+
+class SocialUploadProfileImageErrorState extends SocialRegisterStates {}
+
+

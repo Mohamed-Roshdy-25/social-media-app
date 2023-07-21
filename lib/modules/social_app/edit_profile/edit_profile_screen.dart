@@ -1,4 +1,3 @@
-// ignore_for_file: sized_box_for_whitespace, use_key_in_widget_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,9 +7,11 @@ import 'package:flutter_learn_app/shared/components/components.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
 
 class EditProfileScreen extends StatelessWidget {
-  var nameController = TextEditingController();
-  var bioController = TextEditingController();
-  var phoneController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController bioController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+
+  EditProfileScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +57,7 @@ class EditProfileScreen extends StatelessWidget {
                     const SizedBox(
                       height: 10.0,
                     ),
-                  Container(
+                  SizedBox(
                     height: 190.0,
                     child: Stack(
                       alignment: AlignmentDirectional.bottomCenter,

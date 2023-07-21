@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_typing_uninitialized_variables
 
-class SocialUserModel
-{
+class SocialUserModel {
    String? name;
    String? email;
    String? phone;
@@ -13,6 +12,7 @@ class SocialUserModel
    bool? isEmailVerified;
    List<String>? following;
    List<String>? followers;
+   List<String>? friends;
    List<String>? sendingRequests;
    List<ReceivingRequest>? receivingRequests;
 
@@ -30,6 +30,7 @@ class SocialUserModel
       this.isEmailVerified,
       this.following,
       this.followers,
+      this.friends,
       this.sendingRequests,
       this.receivingRequests,
    });
@@ -47,6 +48,7 @@ class SocialUserModel
       isEmailVerified = json?['isEmailVerified'];
       following = List<String>.from(json?['following']??[]);
       followers = List<String>.from(json?['followers']??[]);
+      friends = List<String>.from(json?['friends']??[]);
       sendingRequests = List<String>.from(json?['sendingRequests']??[]);
       receivingRequests = List<ReceivingRequest>.from(json?['receivingRequests'].map((x) => ReceivingRequest.fromJson(x)));
    }
@@ -65,6 +67,7 @@ class SocialUserModel
          'isEmailVerified': isEmailVerified,
          'following': List<dynamic>.from(following??[]),
          'followers': List<dynamic>.from(followers??[]),
+         'friends': List<dynamic>.from(friends??[]),
          'sendingRequests': List<dynamic>.from(sendingRequests??[]),
          'receivingRequests': List<dynamic>.from(receivingRequests?.map((receivingRequest) => receivingRequest.toMap())??[]),
       };

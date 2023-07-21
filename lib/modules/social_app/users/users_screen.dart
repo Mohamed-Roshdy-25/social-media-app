@@ -77,6 +77,7 @@ class _UsersScreenState extends State<UsersScreen> {
         children: [
           CircleAvatar(
             radius: 25.0,
+            backgroundColor: Colors.grey.shade300,
             backgroundImage: NetworkImage(
               '${model!['image']}',
             ),

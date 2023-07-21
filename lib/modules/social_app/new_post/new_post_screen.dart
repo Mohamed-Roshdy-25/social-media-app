@@ -1,19 +1,16 @@
-// ignore_for_file: must_be_immutable, unnecessary_null_comparison
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_learn_app/firebase_notification_api.dart';
 import 'package:flutter_learn_app/global_method.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/states.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
-import 'package:flutter_learn_app/shared/components/constants.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
 
-// ignore: use_key_in_widget_constructors
 class NewPostScreen extends StatefulWidget {
+  const NewPostScreen({Key? key}) : super(key: key);
+
 
   @override
   State<NewPostScreen> createState() => _NewPostScreenState();
@@ -33,13 +30,15 @@ class _NewPostScreenState extends State<NewPostScreen> {
     return BlocConsumer<SocialCubit, SocialStates>(
       listener: (context, state) {
         if(state is SocialCreatePostSuccessState){
-          fireApi.sendNotifyFromFirebase(
-              title: '${SocialCubit.get(context).userModel?.name} added new post',
-              body: 'click me to go to the post',
-              sendNotifyTo: "/topics/$uId",
-              type: 'post',
-            postId: state.postId,
-          );
+          textController.clear();
+          SocialCubit.get(context).postImage = null;
+          // fireApi.sendNotifyFromFirebase(
+          //     title: '${SocialCubit.get(context).userModel?.name} added new post',
+          //     body: 'click me to go to the post',
+          //     sendNotifyTo: "/topics/$uId",
+          //     type: 'post',
+          //   postId: state.postId,
+          // );
         }
       },
       builder: (context, state) {
@@ -62,7 +61,7 @@ class _NewPostScreenState extends State<NewPostScreen> {
                   );
                 }
 
-                textController.clear();
+
               },
               text: 'Post',
             ),

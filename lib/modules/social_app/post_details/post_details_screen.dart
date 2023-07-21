@@ -87,6 +87,7 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
                               children: [
                                 CircleAvatar(
                                   radius: 25.0,
+                                  backgroundColor: Colors.grey.shade300,
                                   backgroundImage: NetworkImage(
                                     '${model['image']}',
                                   ),
@@ -149,7 +150,11 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
                               padding: const EdgeInsetsDirectional.only(
                                 top: 15.0,
                               ),
-                              child: Image(image: NetworkImage('${model['postImage']}')),
+                              child: Center(child: FadeInImage.assetNetwork(
+                                image: '${model['postImage']}',
+                                placeholder: 'assets/images/animation_lk9uqpkz_small.gif',
+                                imageErrorBuilder: (context, error, stackTrace) => Center(child: Image.asset('assets/images/animation_lk9uqpkz_small.gif'),),
+                              )),
                             ),
                           Padding(
                             padding: const EdgeInsets.symmetric(
@@ -233,6 +238,7 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
                                     children: [
                                       CircleAvatar(
                                         radius: 18.0,
+                                        backgroundColor: Colors.grey.shade300,
                                         backgroundImage: NetworkImage(
                                           SocialCubit.get(context).userModel?.image ?? '',
                                         ),

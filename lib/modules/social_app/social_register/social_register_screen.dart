@@ -7,6 +7,9 @@ import 'package:flutter_learn_app/layout/social%20app/social_layout.dart';
 import 'package:flutter_learn_app/modules/social_app/social_register/cubit/cubit.dart';
 import 'package:flutter_learn_app/modules/social_app/social_register/cubit/states.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
+import 'package:flutter_learn_app/shared/components/constants.dart';
+import 'package:flutter_learn_app/shared/network/local/cache_helper.dart';
+import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
 
 // ignore: use_key_in_widget_constructors
 class SocialRegisterScreen extends StatelessWidget {
@@ -24,7 +27,15 @@ class SocialRegisterScreen extends StatelessWidget {
       child: BlocConsumer<SocialRegisterCubit, SocialRegisterStates>(
         listener: (context, state) {
           if (state is SocialCreateUserSuccessState) {
-            navigateAndFinish(context, const SocialLayout());
+            uId = state.uId;
+            CacheHelper.saveData(
+                key: 'uId', value: state.uId)
+                .then((value) {
+              navigateAndFinish(
+                context,
+                const SocialLayout(),
+              );
+            });
           }
         },
         builder: (context, state) {
@@ -54,6 +65,36 @@ class SocialRegisterScreen extends StatelessWidget {
                           Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Colors.grey,
                           ),
+                        ),
+                        const SizedBox(
+                          height: 30.0,
+                        ),
+                        Stack(
+                          alignment: AlignmentDirectional.bottomEnd,
+                          children: [
+                            CircleAvatar(
+                              radius: 64.0,
+                              backgroundColor:
+                              Theme.of(context).scaffoldBackgroundColor,
+                              child: CircleAvatar(
+                                backgroundColor: Colors.grey.shade300,
+                                radius: 60.0,
+                                backgroundImage: SocialRegisterCubit.get(context).profileImage == null ? null : FileImage(SocialRegisterCubit.get(context).profileImage!) as ImageProvider,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                SocialRegisterCubit.get(context).getProfileImage();
+                              },
+                              icon: const CircleAvatar(
+                                radius: 20.0,
+                                child: Icon(
+                                  IconBroken.Camera,
+                                  size: 16.0,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(
                           height: 30.0,

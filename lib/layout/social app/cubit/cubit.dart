@@ -41,7 +41,7 @@ class SocialCubit extends Cubit<SocialStates> {
 
       emit(SocialGetUserSuccessState());
     } catch (e) {
-      emit(SocialGetUserErrorState(e as String));
+      emit(SocialGetUserErrorState((e as FirebaseException).message??''));
     }
   }
 
@@ -50,7 +50,7 @@ class SocialCubit extends Cubit<SocialStates> {
   List<Widget> screens = [
     const FeedsScreen(),
     const ChatsScreen(),
-    NewPostScreen(),
+    const NewPostScreen(),
     UsersScreen(),
     SettingsScreen(userId: CacheHelper.getData(key: 'uId'),),
   ];
@@ -264,21 +264,20 @@ class SocialCubit extends Cubit<SocialStates> {
     await getUserData();
     emit(SocialGetPostsLoadingState());
     try {
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(uId).snapshots().listen((user) async {
-            print('+++++++++++++++++++++++${user.data()}');
-        final followingList = user.data()?['following'];
+      FirebaseFirestore.instance.collection('users').doc(uId).snapshots().listen((user) async {
+
+        final followingList = user.data()?['following']??[];
+
+        followingList.addAll(user.data()?['friends']??[]);
+
         followingList.add(uId ?? "");
-        posts = FirebaseFirestore.instance
-            .collection('posts')
-            .where('uId', whereIn: followingList)
-            .snapshots();
+
+        posts = FirebaseFirestore.instance.collection('posts').where('uId', whereIn: followingList).snapshots();
 
         emit(SocialGetPostsSuccessState());
       });
-    } catch (error){
-      emit(SocialGetPostsErrorState(error as String));
+    } catch (e){
+      emit(SocialGetPostsErrorState((e as FirebaseException).message??''));
     }
   }
 

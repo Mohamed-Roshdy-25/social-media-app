@@ -35,7 +35,7 @@ class SocialLoginScreen extends StatelessWidget {
                   .then((value) {
                 navigateAndFinish(
                   context,
-                  const SocialLayout(),
+                  SocialLayout(),
                 );
               });
             }

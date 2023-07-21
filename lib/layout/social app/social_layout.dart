@@ -110,7 +110,7 @@ class _SocialLayoutState extends State<SocialLayout> {
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(
-                    IconBroken.Location,
+                    IconBroken.Search,
                   ),
                   label: 'Users',
                 ),

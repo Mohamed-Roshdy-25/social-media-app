@@ -16,17 +16,10 @@ void main() {
         () async {
       WidgetsFlutterBinding.ensureInitialized();
       await Firebase.initializeApp();
-
       DioHelper.init();
       await CacheHelper.init();
-
-      Widget? widget;
-
-
-
       uId = CacheHelper.getData(key: 'uId');
-
-
+      Widget? widget;
       if (uId != null) {
         widget = const SocialLayout();
       }

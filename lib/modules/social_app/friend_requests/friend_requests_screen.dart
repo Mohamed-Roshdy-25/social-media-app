@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_learn_app/firebase_notification_api.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/states.dart';
+import 'package:flutter_learn_app/layout/social%20app/social_layout.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
 import 'package:flutter_learn_app/shared/components/constants.dart';
 import 'package:flutter_learn_app/shared/styles/colors.dart';
@@ -30,7 +31,8 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
           stream: FirebaseFirestore.instance.collection('users').doc(uId).snapshots(),
           builder: (context, snapshot) {
             List friendRequests = List.from(snapshot.data?['receivingRequests']??[]);
-            return Padding(
+            if(friendRequests.isNotEmpty) {
+              return Padding(
               padding: const EdgeInsets.all(10),
               child: ListView.separated(
                 itemBuilder: (context, index) => requestItem(friendRequests[index]),
@@ -38,6 +40,47 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
                 itemCount: friendRequests.length,
               ),
             );
+            }else{
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset('assets/images/no_requests.png',height: 100,width: 100,),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                      Text(
+                        'No Friend Requests',
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelMedium
+                            ?.copyWith(fontSize: 20),
+                        textAlign: TextAlign.center,
+                      ),
+                      InkWell(
+                        overlayColor: const MaterialStatePropertyAll(Colors.transparent),
+                        onTap: () {
+                          navigateAndFinish(context, const SocialLayout());
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(vertical: 10,),
+                          margin: const EdgeInsets.only(top: 20,),
+                          decoration: BoxDecoration(
+                            color: defaultColor,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: const Text('Go to feeds',style: TextStyle(color: Colors.white),),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            }
           },
         );
   },
@@ -100,7 +143,10 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
               children: [
                 InkWell(
                   onTap: () async {
-                    await removeFollowRequest(friendRequest['userId'], friendRequest['userName'], friendRequest['userImage'], friendRequest['userToken'], uId??'');
+                    Future.wait([
+                      unfollowUser(uId??'',friendRequest['userId']),
+                      removeFriendRequest(friendRequest['userId'], friendRequest['userName'], friendRequest['userImage'], friendRequest['userToken'], uId??''),
+                    ]);
                   },
                   borderRadius: BorderRadius.circular(50),
                   child: Container(
@@ -114,9 +160,10 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
                 ),
                 InkWell(
                   onTap: () async {
-                    await followUser(uId??'', friendRequest['userId']);
+                    await friendUser(uId??'', friendRequest['userId']);
+                    // FirebaseMessaging.instance.subscribeToTopic(friendRequest['userId']);
                     fireApi.sendNotifyFromFirebase(title: 'Friend Request Response', body: '${SocialCubit.get(context).userModel?.name} accepted your friend request', sendNotifyTo: friendRequest['userToken'], type: 'friend request response');
-                    await removeFollowRequest(friendRequest['userId'], friendRequest['userName'], friendRequest['userImage'], friendRequest['userToken'], uId??'');
+                    await removeFriendRequest(friendRequest['userId'], friendRequest['userName'], friendRequest['userImage'], friendRequest['userToken'], uId??'');
                   },
                   borderRadius: BorderRadius.circular(50),
                   child: Container(
@@ -136,7 +183,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
     );
   }
 
-  Future<void> removeFollowRequest(
+  Future<void> removeFriendRequest(
       String userId,
       String userName,
       String userImage,
@@ -178,29 +225,21 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
     });
   }
 
-  Future<void> followUser(String userId, String followedUserId) async {
+  Future<void> friendUser(String followedUserId,String userId) async {
     try {
-      await Future.wait([
-        updateFollowing(userId, followedUserId),
-        updateFollowers(userId, followedUserId),
-      ]);
+        updateFriends(followedUserId, userId);
     } catch (error) {
       showErrorDialog(error: 'Failed to follow user: $error', context: context);
     }
   }
 
-  Future<void> updateFollowing(String userId, String followedUserId) async {
-    await FirebaseFirestore.instance.collection('users').doc(followedUserId).update({
-      'following': FieldValue.arrayUnion([userId]),
+  Future<void> updateFriends(String followedUserId,String userId) async {
+    FirebaseFirestore.instance.collection('users').doc(userId).update({
+      'friends': FieldValue.arrayUnion([followedUserId]),
     });
-  }
 
-  Future<void> updateFollowers(String userId, String followedUserId) async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .update({
-      'followers': FieldValue.arrayUnion([followedUserId]),
+    FirebaseFirestore.instance.collection('users').doc(followedUserId).update({
+      'friends': FieldValue.arrayUnion([userId]),
     });
   }
 
@@ -220,6 +259,10 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
     await FirebaseFirestore.instance.collection('users').doc(userId).update({
       'following': FieldValue.arrayRemove([unfollowedUserId]),
     });
+
+    await FirebaseFirestore.instance.collection('users').doc(unfollowedUserId).update({
+      'following': FieldValue.arrayRemove([userId]),
+    });
   }
 
   Future<void> removeFollowers(String userId, String unfollowedUserId) async {
@@ -228,6 +271,13 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
         .doc(unfollowedUserId)
         .update({
       'followers': FieldValue.arrayRemove([userId]),
+    });
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .update({
+      'followers': FieldValue.arrayRemove([unfollowedUserId]),
     });
   }
 
