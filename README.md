@@ -25,4 +25,4 @@ An social media app dealing with :
 
 ## Demo video
 
-[youtube](https://www.youtube.com/watch?v=HJ-YIKo7v7I)
+[video for the project](https://www.youtube.com/watch?v=HJ-YIKo7v7I)
