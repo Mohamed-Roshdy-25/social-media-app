@@ -1,4 +1,5 @@
-# Sociality ##(I made it at the beginning of my learning journey and i add now some new featuers)
+# Sociality 
+##(I made it at the beginning of my learning journey and i add now some new featuers)
 
 
 An social media app dealing with :
