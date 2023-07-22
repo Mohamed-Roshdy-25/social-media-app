@@ -22,3 +22,7 @@ An social media app dealing with :
   - (Add - Delete) comments.
   - search.
   - chat.
+
+## Demo video
+
+[youtube](https://www.youtube.com/watch?v=HJ-YIKo7v7I)
