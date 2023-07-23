@@ -30,7 +30,7 @@ class SocialCubit extends Cubit<SocialStates> {
   Future<void> getUserData() async {
     emit(SocialGetUserLoadingState());
 
-    try {
+    // try {
       await FirebaseFirestore.instance.collection('users').doc(uId)
           .get()
           .then((value) {
@@ -40,9 +40,9 @@ class SocialCubit extends Cubit<SocialStates> {
       });
 
       emit(SocialGetUserSuccessState());
-    } catch (e) {
-      emit(SocialGetUserErrorState((e as FirebaseException).message??''));
-    }
+    // } catch (e) {
+    //   emit(SocialGetUserErrorState(e.message??''));
+    // }
   }
 
   int currentIndex = 0;

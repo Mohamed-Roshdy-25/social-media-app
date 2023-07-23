@@ -43,33 +43,19 @@ class SocialRegisterScreen extends StatelessWidget {
 
           return Scaffold(
             appBar: AppBar(),
-            body: Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'REGISTER',
-                          style:
-                          Theme.of(context).textTheme.headlineMedium!.copyWith(
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          'Register now to communicate with new friends',
-                          style:
-                          Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 30.0,
-                        ),
-                        Stack(
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(
+                        height: 30.0,
+                      ),
+                      Center(
+                        child: Stack(
                           alignment: AlignmentDirectional.bottomEnd,
                           children: [
                             CircleAvatar(
@@ -96,111 +82,111 @@ class SocialRegisterScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(
-                          height: 30.0,
-                        ),
-                        defaultFormField(
-                          keyboardtype: TextInputType.name,
-                          controller: nameController,
-                          labeltext: 'Name',
-                          prefix: Icons.person,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Please enter your name';
-                            } else {
-                              return null;
-                            }
-                          },
-                        ),
-                        const SizedBox(
-                          height: 15.0,
-                        ),
-                        defaultFormField(
-                          keyboardtype: TextInputType.emailAddress,
-                          controller: emailController,
-                          labeltext: 'Email',
-                          prefix: Icons.email_outlined,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Please enter your email';
-                            } else {
-                              return null;
-                            }
-                          },
-                        ),
-                        const SizedBox(
-                          height: 15.0,
-                        ),
-                        defaultFormField(
-                          keyboardtype: TextInputType.visiblePassword,
-                          controller: passwordController,
-                          obscure: shopRegisterCubit.obscure,
-                          labeltext: 'Password',
-                          prefix: Icons.lock,
-                          suffix: shopRegisterCubit.suffix,
-                          suffixpressed: () {
-                            shopRegisterCubit.changeObscure();
-                          },
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Password is too short';
-                            } else {
-                              return null;
-                            }
-                          },
-                          onSubmit: (value) {
+                      ),
+                      const SizedBox(
+                        height: 30.0,
+                      ),
+                      defaultFormField(
+                        keyboardtype: TextInputType.name,
+                        controller: nameController,
+                        labeltext: 'Name',
+                        prefix: Icons.person,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter your name';
+                          } else {
+                            return null;
+                          }
+                        },
+                      ),
+                      const SizedBox(
+                        height: 15.0,
+                      ),
+                      defaultFormField(
+                        keyboardtype: TextInputType.emailAddress,
+                        controller: emailController,
+                        labeltext: 'Email',
+                        prefix: Icons.email_outlined,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter your email';
+                          } else {
+                            return null;
+                          }
+                        },
+                      ),
+                      const SizedBox(
+                        height: 15.0,
+                      ),
+                      defaultFormField(
+                        keyboardtype: TextInputType.visiblePassword,
+                        controller: passwordController,
+                        obscure: shopRegisterCubit.obscure,
+                        labeltext: 'Password',
+                        prefix: Icons.lock,
+                        suffix: shopRegisterCubit.suffix,
+                        suffixpressed: () {
+                          shopRegisterCubit.changeObscure();
+                        },
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Password is too short';
+                          } else {
+                            return null;
+                          }
+                        },
+                        onSubmit: (value) {
+                          if (formKey.currentState!.validate()) {
+                            SocialRegisterCubit.get(context).userRegister(
+                              name: nameController.text,
+                              email: emailController.text,
+                              password: passwordController.text,
+                              phone: phoneController.text
+                            );
+                          }
+                        },
+                      ),
+                      const SizedBox(
+                        height: 15.0,
+                      ),
+                      defaultFormField(
+                        keyboardtype: TextInputType.phone,
+                        controller: phoneController,
+                        labeltext: 'Phone Number',
+                        prefix: Icons.phone,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter your phone';
+                          } else {
+                            return null;
+                          }
+                        },
+                      ),
+                      const SizedBox(
+                        height: 30.0,
+                      ),
+                      ConditionalBuilder(
+                        condition: state is! SocialRegisterLoadingState,
+                        builder: (context) => defaultButton(
+                          function: () {
                             if (formKey.currentState!.validate()) {
                               SocialRegisterCubit.get(context).userRegister(
-                                name: nameController.text,
-                                email: emailController.text,
-                                password: passwordController.text,
-                                phone: phoneController.text
+                                  name: nameController.text,
+                                  email: emailController.text,
+                                  password: passwordController.text,
+                                  phone: phoneController.text
                               );
                             }
                           },
+                          text: 'register',
+                          isUpperCase: true,
                         ),
-                        const SizedBox(
-                          height: 15.0,
+                        fallback: (context) =>
+                        const Center(
+                          child: CircularProgressIndicator(),
                         ),
-                        defaultFormField(
-                          keyboardtype: TextInputType.phone,
-                          controller: phoneController,
-                          labeltext: 'Phone Number',
-                          prefix: Icons.phone,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Please enter your phone';
-                            } else {
-                              return null;
-                            }
-                          },
-                        ),
-                        const SizedBox(
-                          height: 30.0,
-                        ),
-                        ConditionalBuilder(
-                          condition: state is! SocialRegisterLoadingState,
-                          builder: (context) => defaultButton(
-                            function: () {
-                              if (formKey.currentState!.validate()) {
-                                SocialRegisterCubit.get(context).userRegister(
-                                    name: nameController.text,
-                                    email: emailController.text,
-                                    password: passwordController.text,
-                                    phone: phoneController.text
-                                );
-                              }
-                            },
-                            text: 'register',
-                            isUpperCase: true,
-                          ),
-                          fallback: (context) =>
-                          const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
