@@ -1,16 +1,28 @@
-# flutter_learn_app
+# Sociality 
+## I made it at the beginning of my learning journey and i add now some new featuers.
 
-A new Flutter project.
 
-## Getting Started
+An social media app dealing with :
+  - Firebase as backend.
+  - Bloc(Cubit) as state management.
+  - real time data
+  - FCM notification
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+# Featuers
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+  - Authentication (login - register).
+  - (Create-Delete) post.
+  - Followers & Following.
+  - (Add - Delete) Friend request.
+  - Get Friend requests.
+  - (Get - Update) profile.
+  - Get following posts.
+  - (Add - Delete) likes.
+  - (Add - Delete) comments.
+  - search.
+  - chat.
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Demo video
+
+[video for the project](https://www.youtube.com/watch?v=HJ-YIKo7v7I)
