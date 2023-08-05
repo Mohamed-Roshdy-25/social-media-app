@@ -42,9 +42,9 @@ class CommentsScreen extends StatelessWidget {
                               commenterId: snapshot.data?['comments'][index]['userId'],
                               commenterName: snapshot.data?['comments'][index]['name'],
                               commenterImageUrl: snapshot.data?['comments'][index]['userImageUrl'],
-                              taskId: postId,
+                              postId: postId,
                               comment: snapshot.data?['comments'][index],
-                              taskOwner: uploadedById,
+                              postOwner: uploadedById,
                             ),
                             if(index == snapshot.data?['comments'].length -1)
                               const SizedBox(height: 30,)

@@ -35,7 +35,6 @@ class SocialCubit extends Cubit<SocialStates> {
           .then((value) {
         print(value.data());
         userModel = SocialUserModel.fromJson(value.data());
-
       });
       emit(SocialGetUserSuccessState());
 
@@ -359,6 +358,7 @@ class SocialCubit extends Cubit<SocialStates> {
   Future<void> signOut() async {
     emit(SocialSignOutLoadingState());
     try {
+      userModel = null;
      await FirebaseAuth.instance.signOut();
 
       emit(SocialSignOutSuccessState());

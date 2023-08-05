@@ -150,20 +150,15 @@ void showErrorDialog({required String error, required BuildContext context}) {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Row(
-            children: const [
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Error occured'),
-              ),
-            ],
-          ),
-          content: Text(
-            error,
-            style: const TextStyle(
-                color: Colors.blue,
-                fontSize: 15,
-                fontStyle: FontStyle.italic),
+          content: Padding(
+            padding: const EdgeInsets.only(top: 10.0),
+            child: Text(
+              error,
+              style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontSize: 15,
+                  fontStyle: FontStyle.italic),
+            ),
           ),
           actions: [
             TextButton(

@@ -55,16 +55,7 @@ class _FeedsScreenState extends State<FeedsScreen> {
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: SocialCubit.get(context).posts,
             builder: (context, snapshot) {
-              if (snapshot.data != null) {
-                if (snapshot.data?.docs.isNotEmpty ?? false) {
-                  return ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return PostItemWidget(model: snapshot.data?.docs[index],context: context,);
-                    },
-                    itemCount: snapshot.data?.docs.length ?? 0,
-                  );
-                } else {
+                if (snapshot.data?.docs.isEmpty ?? false) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 30),
                     child: Column(
@@ -94,12 +85,14 @@ class _FeedsScreenState extends State<FeedsScreen> {
                     ),
                   );
                 }
-              } else {
-                return const Center(
-                  child: CircularProgressIndicator(),
+                return ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return PostItemWidget(model: snapshot.data?.docs[index]);
+                  },
+                  itemCount: snapshot.data?.docs.length ?? 0,
                 );
-              }
-            });
+            },);
       },
     );
   }

@@ -46,6 +46,7 @@ class ChatsScreen extends StatelessWidget {
           child: Row(children: [
             CircleAvatar(
               radius: 25.0,
+              backgroundColor: Colors.grey,
               backgroundImage: NetworkImage(
                 '${model.image}',
               ),

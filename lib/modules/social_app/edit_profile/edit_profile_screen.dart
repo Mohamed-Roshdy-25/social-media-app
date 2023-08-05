@@ -1,8 +1,11 @@
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/cubit.dart';
 import 'package:flutter_learn_app/layout/social%20app/cubit/states.dart';
+import 'package:flutter_learn_app/models/social_app/social_user_model.dart';
 import 'package:flutter_learn_app/shared/components/components.dart';
 import 'package:flutter_learn_app/shared/styles/icon_broken.dart';
 
@@ -18,13 +21,16 @@ class EditProfileScreen extends StatelessWidget {
     return BlocConsumer<SocialCubit, SocialStates>(
       listener: (context, state) {},
       builder: (context, state) {
-        var userModel = SocialCubit.get(context).userModel;
-        var profileImage = SocialCubit.get(context).profileImage;
-        var coverImage = SocialCubit.get(context).coverImage;
+        SocialUserModel? userModel = SocialCubit.get(context).userModel;
+        File? profileImage = SocialCubit.get(context).profileImage;
+        File? coverImage = SocialCubit.get(context).coverImage;
 
-        nameController.text = userModel?.name as String;
-        phoneController.text = userModel?.phone as String;
-        bioController.text = userModel?.bio as String;
+
+        if(userModel != null) {
+          nameController.text = userModel.name as String;
+          phoneController.text = userModel.phone as String;
+          bioController.text = userModel.bio as String;
+        }
 
         return Scaffold(
           appBar: defaultAppBar(

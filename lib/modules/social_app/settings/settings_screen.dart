@@ -137,6 +137,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                   ),
                                                 );
                                               },
+                                              errorBuilder: (context, error, stackTrace) => Container(
+                                                clipBehavior: Clip.antiAlias,
+                                                height: 120,
+                                                width: 120,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.grey.shade300,
+                                                    shape: BoxShape.circle),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -461,9 +469,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                           physics:
                                               const NeverScrollableScrollPhysics(),
                                           itemBuilder: (context, index) {
-                                            return PostItemWidget(
-                                                model: currentUserPosts[index],
-                                                context: context);
+                                            return PostItemWidget(model: currentUserPosts[index]);
                                           },
                                           separatorBuilder: (context, index) =>
                                               const SizedBox(

@@ -328,9 +328,9 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
                                       commenterId: snapshot.data?['comments'][index]['userId'],
                                       commenterName: snapshot.data?['comments'][index]['name'],
                                       commenterImageUrl: snapshot.data?['comments'][index]['userImageUrl'],
-                                      taskId: model.id,
+                                      postId: model.id,
                                       comment: snapshot.data?['comments'][index],
-                                      taskOwner: model['uId'],
+                                      postOwner: model['uId'],
                                     ),
                                     if(index == snapshot.data?['comments'].length -1)
                                       const SizedBox(height: 30,)
